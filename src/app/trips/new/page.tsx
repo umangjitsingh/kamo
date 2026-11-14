@@ -1,115 +1,40 @@
-// "use client"
-//
-// import React, {useState} from 'react';
-//
-// function NewTripsPage() {
-//
-//     const [newTripDetails,setNewTripDetails]=useState({
-//         title:"",
-//         startDate:"",
-//         endDate:"",
-//         description:""
-//     })
-//     console.log(newTripDetails)
-//
-//     function handleNewTrip(e:React.SyntheticEvent){
-//         e.preventDefault()
-//     }
-//     return (
-//         <div className="p-2">
-//             <div className="max-w-lg mx-auto mt-10 bg-stone-50/40 rounded-lg p-4 border border-gray-400/40 shadow-sm ">
-//                 <h1 className=" font-medium pt-2.5 py-6">New trip details :</h1>
-//                 <form className="space-y-6" onSubmit={(e)=>handleNewTrip(e)}>
-//                     <div>
-//                         <label htmlFor="title" className="text-sm font-medium text-gray-700/90">Title</label>
-//                         <input id="title"
-//                                type="text"
-//                                name="title"
-//                                value={newTripDetails.title}
-//                                onChange={(e)=>setNewTripDetails((p)=>({...p,title:e.target.value}))}
-//                                placeholder="Qatar trip..."
-//                                className="w-full bg-white border border-gray-400/40 px-4 py-2 rounded-md focus-within:outline-none focus:ring-1 focus:ring-teal-400"/>
-//                     </div>
-//
-//                     <div className="flex flex-col sm:flex-row gap-2 items-center justify-center  ">
-//                         <div className="w-full">
-//                             <label htmlFor="startDate" className="text-sm font-medium text-gray-700/90">Start
-//                                 date</label>
-//                             <input id="startDate"
-//                                    type="date"
-//                                    name="startDate"
-//                                    value={newTripDetails.startDate}
-//                                    onChange={(e)=>setNewTripDetails((p)=>({...p,startDate:e.target.value}))}
-//                                    className="w-full bg-white border border-gray-400/40 px-4 py-2 rounded-md focus-within:outline-none focus:ring-1 focus:ring-teal-400 scheme-light text-gray-400"/>
-//                         </div>
-//
-//                         <div className="w-full">
-//                             <label htmlFor="endDate" className="text-sm font-medium text-gray-700/90">End
-//                                 date</label>
-//                             <input id="endDate"
-//                                    type="date"
-//                                    name="endDate"
-//                                    value={newTripDetails.endDate}
-//                                    onChange={(e)=>setNewTripDetails((p)=>({...p,endDate:e.target.value}))}
-//                                    className="w-full bg-white border border-gray-400/40 px-4 py-2 rounded-md focus-within:outline-none focus:ring-1 focus:ring-teal-400 scheme-light text-gray-400"/>
-//                         </div>
-//                     </div>
-//
-//                     <div>
-//                         <label htmlFor="description" className="text-sm font-medium text-gray-700/90"></label>
-//                         <textarea
-//                             id="description"
-//                             name="description"
-//                             value={newTripDetails.description}
-//                             onChange={(e)=>setNewTripDetails((p)=>({...p,description:e.target.value}))}
-//                             placeholder="Please enter the description of your trip."
-//                             className="w-full bg-white border border-gray-400/40 px-4 py-2 rounded-md focus-within:outline-none focus:ring-1 focus:ring-teal-400 min-h-60 placeholder:font-light placeholder:text-gray-400/80"/>
-//                     </div>
-//
-//                     <button type="submit" className="rounded-md bg-linear-to-bl cursor-pointer from-gray-950/90  to-slate-950 text-white text-center w-full py-2 font-semibold border border-gray-400/40 hover:scale-[1.007]">
-//                         Create Trip
-//                     </button>
-//
-//                 </form>
-//             </div>
-//         </div>
-//
-//     );
-// }
-//
-// export default NewTripsPage;
 "use client";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {z} from "zod";
+import {createTrip} from "@/lib/server-actions/create-trip";
+import {UploadButton} from "@/lib/uploadthing";
+import {useState} from "react";
+import Image from "next/image";
 
- const tripSchema = z
+const tripSchema = z
     .object({
         title: z.string().trim().min(1, "Title is required").max(100, "Max 100 characters"),
         startDate: z.string().min(1, "Start date is required"),
         endDate: z.string().min(1, "End date is required"),
         description: z.string().trim().max(1000, "Max 1000 characters"),
+        imageUrl: z.string().optional(),
     })
     .refine((d) => !d.startDate || !d.endDate || d.endDate >= d.startDate, {
         message: "End date must be on or after start date",
         path: ["endDate"], // attaches the error to the endDate field
     });
 
- type TripForm = z.infer<typeof tripSchema>;
+type TripForm = z.infer<typeof tripSchema>;
 
 export default function NewTripsPage() {
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting },
+        formState: {errors, isSubmitting},
     } = useForm<TripForm>({
         resolver: zodResolver(tripSchema),
-        defaultValues: { title: "", startDate: "", endDate: "", description: "" },
+        defaultValues: {title: "", startDate: "", endDate: "", description: ""},
     });
+    const [imgUrl, setImgUrl] = useState<string | null>(null)
 
     async function onSubmit(data: TripForm) {
-        // send to your API; validate again with tripSchema on the server
-        console.log(data);
+        await createTrip({...data, imageUrl: imgUrl || undefined})
     }
 
     return (
@@ -130,7 +55,8 @@ export default function NewTripsPage() {
 
                     <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
                         <div className="w-full">
-                            <label htmlFor="startDate" className="text-sm font-medium text-gray-700/90">Start date</label>
+                            <label htmlFor="startDate" className="text-sm font-medium text-gray-700/90">Start
+                                date</label>
                             <input
                                 id="startDate"
                                 type="date"
@@ -153,7 +79,8 @@ export default function NewTripsPage() {
                     </div>
 
                     <div>
-                        <label htmlFor="description" className="text-sm font-medium text-gray-700/90">Description</label>
+                        <label htmlFor="description"
+                               className="text-sm font-medium text-gray-700/90">Description</label>
                         <textarea
                             id="description"
                             {...register("description")}
@@ -163,9 +90,29 @@ export default function NewTripsPage() {
                         {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
+                    <div>
+                        <label>Trip Image</label>
+                        {imgUrl && <Image src={imgUrl} alt="Trip Preview" width={100} height={100} className="rounded-md p-4 object-cover"/>}
+                    </div>
+                    <div>
+                        <UploadButton
+                            endpoint="imageUploader"
+                            onClientUploadComplete={(res) => {
+                                if (res && res[0].ufsUrl) {
+                                    setImgUrl(res[0].ufsUrl)
+                                }
+                            }}
+                            onUploadError={(error:Error)=>{
+                                console.log("Upload Error: ",error)
+                            }}
+                            className="ut-button:bg-teal-600 ut-button:hover:bg-teal-600 ut-button:text-white ut-button:rounded-md ut-button:px-4 ut-button:py-2 ut-button:font-medium ut-button:w-full"
+                        />
+                    </div>
+
+
+                            <button
+                            type="submit"
+                            disabled={isSubmitting}
                         className="rounded-md bg-linear-to-bl cursor-pointer from-gray-950/90 to-slate-950 text-white text-center w-full py-2 font-semibold border border-gray-400/40 hover:scale-[1.007]"
                     >
                         Create Trip

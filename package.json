@@ -16,7 +16,7 @@
     "@hookform/resolvers": "^7.0.6",
     "@prisma/client": "^6.4.1",
     "@react-google-maps/api": "^2.20.6",
-    "@uploadthing/react": "^7.3.0",
+    "@uploadthing/react": "^7.3.3",
     "clsx": "^2.1.1",
     "lucide-react": "^0.487.0",
     "next": "16.4.6",
@@ -27,7 +27,7 @@
     "react-hook-form": "^7.92.0",
     "tailwind-merge": "^3.2.0",
     "tw-animate-css": "^1.2.5",
-    "uploadthing": "^7.5.2",
+    "uploadthing": "^7.7.4",
     "zod": "^4.6.7"
   },
   "devDependencies": {

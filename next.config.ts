@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   reactCompiler: true,
+  images:{
+    remotePatterns:[
+      {hostname:"5rvywebj2o.ufs.sh"}
+]},
   turbopack: {
     rules: {
       "*.css": {
